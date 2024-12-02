@@ -2,7 +2,7 @@
 A Tampermonkey userscript that enhances the Sirus WoW Armory character pages by adding additional stats display.
 
 <p align="center">
-  <img src="https://github.com/TurboKach/wow-sirus-extended-armory/raw/master/screenshots/preview.jpg" width="300">
+  <img src="https://github.com/TurboKach/wow-sirus-extended-armory/raw/master/screenshots/preview.jpg" width="400">
 </p>
 
 ## Features
