@@ -14,9 +14,9 @@
 // @downloadURL  https://raw.githubusercontent.com/TurboKach/wow-sirus-extended-armory/master/sirus-wow-extended-stats.user.js
 // ==/UserScript==
 
-/* 
+/*
  * Sirus WoW Armory Extended Stats
- * 
+ *
  * This script enhances the Sirus WoW Armory character pages by adding a new stats panel
  * that shows additional character statistics including:
  * - Hit Rating (with percentage)
@@ -271,14 +271,19 @@
             const body = document.createElement('div');
             body.className = 'card-body card-datatable';
 
-            // Add row and column structure similar to original stats
+            // Add row structure
             const row = document.createElement('div');
             row.className = 'row';
 
-            const col = document.createElement('div');
-            col.className = 'box-col col-12';
+            // Create two columns for stats
+            const col1 = document.createElement('div');
+            col1.className = 'box-col col-12 col-lg-6';
 
-            row.appendChild(col);
+            const col2 = document.createElement('div');
+            col2.className = 'box-col col-12 col-lg-6';
+
+            row.appendChild(col1);
+            row.appendChild(col2);
             body.appendChild(row);
             statsCard.appendChild(body);
 
@@ -286,42 +291,64 @@
             mainContent.appendChild(statsCard);
         }
 
-    // Calculate percentages (even for 0 values)
-    const percentages = {
-        hitRating: (totalStats.hitRating / 26.23).toFixed(2),
-        hasteRating: (totalStats.hasteRating / 32.79).toFixed(2),
-        spellPenetration: totalStats.spellPenetration,
-        resilience: (totalStats.resilience / 81.97497559).toFixed(2),
-        armorPenRating: (totalStats.armorPenRating / 13.99).toFixed(2)
-    };
+        // Calculate percentages
+        const percentages = {
+            hitRating: (totalStats.hitRating / 26.23).toFixed(2),
+            hasteRating: (totalStats.hasteRating / 32.79).toFixed(2),
+            spellPenetration: totalStats.spellPenetration,
+            resilience: (totalStats.resilience / 81.97497559).toFixed(2),
+            armorPenRating: (totalStats.armorPenRating / 13.99).toFixed(2)
+        };
 
-    const displayStats = {
-        hitRating: { name: 'Меткость', format: (v, p) => `${v} (${p}%)` },
-        hasteRating: { name: 'Скорость', format: (v, p) => `${v} (${p}%)` },
-        spellPenetration: { name: 'Пробивание закл.', format: (v) => `${v} (-${v})` },
-        resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
-        armorPenRating: { name: 'Пробивание брони', format: (v, p) => `${v} (${p}%)` }
-    };
+        const displayStats = {
+            // First column stats
+            col1: {
+                hitRating: { name: 'Меткость', format: (v, p) => `${v} (${p}%)` },
+                hasteRating: { name: 'Скорость', format: (v, p) => `${v} (${p}%)` },
+                spellPenetration: { name: 'Пробивание закл.', format: (v) => `${v} (-${v})` }
+            },
+            // Second column stats
+            col2: {
+                resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
+                armorPenRating: { name: 'Пробивание брони', format: (v, p) => `${v} (${p}%)` }
+            }
+        };
 
-    // Get the column to put our stats in
-    const statsColumn = statsCard.querySelector('.box-col');
-    statsColumn.innerHTML = ''; // Clear existing stats
+        // Get columns
+        const [col1, col2] = statsCard.querySelectorAll('.box-col');
+        col1.innerHTML = '';
+        col2.innerHTML = '';
 
-    // Always show all stats, even if 0
-    Object.entries(displayStats).forEach(([key, info]) => {
-        const value = totalStats[key] || 0;
-        const formattedValue = info.format(value, percentages[key]);
-        const newRow = document.createElement('div');
-        newRow.className = 'box-row';
-        newRow.innerHTML = `
+        // Fill first column
+        Object.entries(displayStats.col1).forEach(([key, info]) => {
+            const value = totalStats[key] || 0;
+            const formattedValue = info.format(value, percentages[key]);
+            const newRow = document.createElement('div');
+            newRow.className = 'box-row';
+            newRow.innerHTML = `
             <div class="box-item">
                 <p class="item-name">${info.name}:</p>
                 <p class="item-stats">${formattedValue}</p>
             </div>
         `;
-        statsColumn.appendChild(newRow);
-    });
-}
+            col1.appendChild(newRow);
+        });
+
+        // Fill second column
+        Object.entries(displayStats.col2).forEach(([key, info]) => {
+            const value = totalStats[key] || 0;
+            const formattedValue = info.format(value, percentages[key]);
+            const newRow = document.createElement('div');
+            newRow.className = 'box-row';
+            newRow.innerHTML = `
+            <div class="box-item">
+                <p class="item-name">${info.name}:</p>
+                <p class="item-stats">${formattedValue}</p>
+            </div>
+        `;
+            col2.appendChild(newRow);
+        });
+    }
 
     async function init() {
         try {
