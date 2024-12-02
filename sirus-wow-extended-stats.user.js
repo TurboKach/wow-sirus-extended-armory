@@ -3,7 +3,7 @@
 // @namespace    https://github.com/TurboKach/wow-sirus-extended-armory
 // @version      1.0.0
 // @description  Adds additional stats display (Hit Rating, Haste, Spell Penetration, Resilience, Armor Penetration) to Sirus WoW Armory character pages
-// @author       Your Name
+// @author       https://github.com/TurboKach
 // @match        https://sirus.su/base/character/*
 // @grant        GM_xmlhttpRequest
 // @connect      sirus.su
