@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sirus WoW Armory Extended Stats
 // @namespace    https://github.com/TurboKach/wow-sirus-extended-armory
-// @version      1.0.0
+// @version      1.1.0
 // @description  Adds additional stats display (Hit Rating, Haste, Spell Penetration, Resilience, Armor Penetration) to Sirus WoW Armory character pages
 // @author       https://github.com/TurboKach
 // @match        https://sirus.su/base/character/*
@@ -34,7 +34,7 @@
  * Conversion rates at level 80:
  * - Hit Rating: 26.23 rating = 1%
  * - Haste Rating: 32.79 rating = 1%
- * - Resilience: 81.97497559 rating = 1%
+ * - Resilience: 94.27 rating = 1%
  * - Armor Penetration: 13.99 rating = 1%
  */
 
@@ -46,11 +46,24 @@
 
     // Only tracking stats that aren't shown on the site
     const STAT_TYPES = {
-        31: { name: 'hitRating', displayName: 'Меткость' },
-        36: { name: 'hasteRating', displayName: 'Скорость' },
-        37: { name: 'spellPenetration', displayName: 'Пробивание закл.' },
-        35: { name: 'resilience', displayName: 'Устойчивость' },
-        44: { name: 'armorPenRating', displayName: 'Пробивание брони' }
+        31: { name: 'hitRating', displayName: 'Меткость', ratingPerPercent: 26.23 },
+        36: { name: 'hasteRating', displayName: 'Скорость', ratingPerPercent: 32.79 },
+        37: { name: 'spellPenetration', displayName: 'Проникающая способность закл.' },
+        35: { name: 'resilience', displayName: 'Устойчивость', ratingPerPercent: 94.27 },
+        44: { name: 'armorPenRating', displayName: 'Пробивание брони', ratingPerPercent: 13.99 },
+        32: { name: 'spellCrit', displayName: 'Крит. удар закл.', ratingPerPercent: 26.63 },
+        43: { name: 'manaRegen', displayName: 'Восп. маны' }
+    };
+
+    // Stat text mappings for gem and enchant descriptions
+    const STAT_TEXT_MAPPINGS = {
+        'к рейтингу меткости': 'hitRating',
+        'к рейтингу скорости': 'hasteRating',
+        'к проникающей способности заклинаний': 'spellPenetration',
+        'к рейтингу устойчивости': 'resilience',
+        'к пробиванию брони': 'armorPenRating',
+        'к критическому удару заклинаний': 'spellCrit',
+        'к восполнению маны': 'manaRegen'
     };
 
     // Wait for element to appear
@@ -167,22 +180,15 @@
             hasteRating: 0,
             spellPenetration: 0,
             resilience: 0,
-            armorPenRating: 0
+            armorPenRating: 0,
+            spellCrit: 0,
+            manaRegen: 0
         };
 
-        // At the start of calculateItemStats:
         if (!itemData?.item) return stats;
         const item = itemData.item;
 
         console.log('Processing item:', item.name);
-        console.log('Raw stat types:');
-        for (let i = 1; i <= 10; i++) {
-            const statType = item[`stat_type${i}`];
-            const statValue = item[`stat_value${i}`];
-            if (statType && statValue) {
-                console.log(`stat_type${i}: ${statType}, value: ${statValue}`);
-            }
-        }
 
         // Process base stats
         for (let i = 1; i <= 10; i++) {
@@ -196,27 +202,28 @@
             }
         }
 
-        // Process enchantments
+        // Process enchantments with dual-stat support
         if (item.enchantments?.name) {
             const enchText = item.enchantments.name;
             console.log('Processing enchant:', enchText);
 
-            if (enchText.includes('к проникающей способности заклинаний')) {
-                const match = enchText.match(/\+(\d+)/);
-                if (match) {
-                    const value = parseInt(match[1]);
-                    stats.spellPenetration += value;
-                    console.log(`Added ${value} to spell penetration from enchant`);
-                }
-            }
+            // Split enchant text for dual stats
+            const enchantParts = enchText.split(' и ');
+            enchantParts.forEach(part => {
+                const enchantMatch = part.match(/\+(\d+)\s+([^]+)/);
+                if (enchantMatch) {
+                    const [, valueStr, statDesc] = enchantMatch;
+                    const value = parseInt(valueStr);
 
-            if (enchText.includes('к рейтингу устойчивости')) {
-                const match = enchText.match(/\+(\d+)/);
-                if (match) {
-                    stats.resilience += parseInt(match[1]);
-                    console.log(`Added ${match[1]} to resilience from enchant`);
+                    for (const [statText, statName] of Object.entries(STAT_TEXT_MAPPINGS)) {
+                        if (statDesc.includes(statText)) {
+                            stats[statName] += value;
+                            console.log(`Added ${value} ${statName} from enchant part`);
+                            break;
+                        }
+                    }
                 }
-            }
+            });
         }
 
         // Process gems
@@ -226,147 +233,238 @@
                     const gemDesc = socket.gem.description;
                     console.log(`Processing gem ${idx}:`, gemDesc);
 
-                    if (gemDesc.includes('к проникающей способности заклинаний')) {
-                        const match = gemDesc.match(/\+(\d+)/);
-                        if (match) {
-                            const value = parseInt(match[1]);
-                            stats.spellPenetration += value;
-                            console.log(`Added ${value} to spell penetration from gem`);
-                        }
-                    }
+                    // Handle dual-stat gems
+                    const gemStats = gemDesc.split(' и ');
+                    gemStats.forEach(statDesc => {
+                        const gemMatch = statDesc.match(/\+(\d+)\s+([^]+)/);
+                        if (gemMatch) {
+                            const [, valueStr, statText] = gemMatch;
+                            const value = parseInt(valueStr);
 
-                    if (gemDesc.includes('к рейтингу устойчивости')) {
-                        const match = gemDesc.match(/\+(\d+)/);
-                        if (match) {
-                            stats.resilience += parseInt(match[1]);
-                            console.log(`Added ${match[1]} to resilience from gem`);
+                            for (const [searchText, statName] of Object.entries(STAT_TEXT_MAPPINGS)) {
+                                if (statText.includes(searchText)) {
+                                    stats[statName] += value;
+                                    console.log(`Added ${value} ${statName} from gem`);
+                                    break;
+                                }
+                            }
                         }
-                    }
+                    });
                 }
             });
+        }
+
+        // Process socket bonus if gems match the requirement
+        if (item.is_right_gem_colors && item.socket_bonus_ench) {
+            const bonusText = item.socket_bonus_ench.name;
+            console.log('Processing socket bonus:', bonusText);
+
+            const bonusMatch = bonusText.match(/\+(\d+)\s+([^]+)/);
+            if (bonusMatch) {
+                const [, valueStr, statDesc] = bonusMatch;
+                const value = parseInt(valueStr);
+
+                for (const [statText, statName] of Object.entries(STAT_TEXT_MAPPINGS)) {
+                    if (statDesc.includes(statText)) {
+                        stats[statName] += value;
+                        console.log(`Added ${value} ${statName} from socket bonus`);
+                        break;
+                    }
+                }
+            }
         }
 
         console.log('Final stats for item:', stats);
         return stats;
     }
 
+    function calculateSetBonuses(itemData) {
+        const stats = {
+            hitRating: 0,
+            hasteRating: 0,
+            spellPenetration: 0,
+            resilience: 0,
+            armorPenRating: 0,
+            spellCrit: 0,
+            manaRegen: 0
+        };
+
+        if (itemData?.item?.itemset_data?.setBonuses) {
+            itemData.item.itemset_data.setBonuses.forEach(bonus => {
+                if (bonus.used) {
+                    const bonusText = bonus.spell;
+                    console.log('Processing set bonus:', bonusText);
+
+                    const bonusMatch = bonusText.match(/\+(\d+)\s+([^]+)/);
+                    if (bonusMatch) {
+                        const [, valueStr, statDesc] = bonusMatch;
+                        const value = parseInt(valueStr);
+
+                        for (const [statText, statName] of Object.entries(STAT_TEXT_MAPPINGS)) {
+                            if (statDesc.includes(statText)) {
+                                stats[statName] += value;
+                                console.log(`Added ${value} ${statName} from set bonus`);
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        return stats;
+    }
+
     function updateStatsDisplay(totalStats) {
-        const mainContent = document.querySelector('.card.talents.mt-3').parentElement;
+        const mainContent = document.querySelector('.card.talents.mt-3')?.parentElement;
         if (!mainContent) return;
 
-        // Check if our stats card already exists
         let statsCard = document.querySelector('.card.extra-stats');
         if (!statsCard) {
-            // Create new card
             statsCard = document.createElement('div');
-            statsCard.className = 'card extra-stats mt-3';
+            statsCard.setAttribute('data-v-43386d94', '');
+            statsCard.setAttribute('data-v-46f0c0ee', '');
+            statsCard.className = 'card talents mt-3';
 
-            // Add header
             const header = document.createElement('div');
+            header.setAttribute('data-v-43386d94', '');
             header.className = 'card-header';
-            header.innerHTML = '<h5>Дополнительные характеристики</h5>';
+            header.innerHTML = '<h5 data-v-43386d94="">Дополнительные характеристики<br>(бонусы от созвездий и расы не учитываются)</h5>';
             statsCard.appendChild(header);
 
-            // Add body
             const body = document.createElement('div');
+            body.setAttribute('data-v-43386d94', '');
             body.className = 'card-body card-datatable';
 
-            // Add row structure
             const row = document.createElement('div');
+            row.setAttribute('data-v-43386d94', '');
             row.className = 'row';
 
-            // Create two columns for stats
+            // Create three columns to match original layout
             const col1 = document.createElement('div');
-            col1.className = 'box-col col-12 col-lg-6';
+            col1.setAttribute('data-v-43386d94', '');
+            col1.className = 'box-col col-12 col-lg-4 col-md-6';
 
             const col2 = document.createElement('div');
-            col2.className = 'box-col col-12 col-lg-6';
+            col2.setAttribute('data-v-43386d94', '');
+            col2.className = 'box-col col-12 col-lg-4 col-md-6';
+
+            const col3 = document.createElement('div');
+            col3.setAttribute('data-v-43386d94', '');
+            col3.className = 'box-col col-12 col-lg-4 col-md-6';
 
             row.appendChild(col1);
             row.appendChild(col2);
+            row.appendChild(col3);
             body.appendChild(row);
             statsCard.appendChild(body);
-
-            // Insert after talents card
             mainContent.appendChild(statsCard);
         }
 
         // Calculate percentages
         const percentages = {
-            hitRating: (totalStats.hitRating / 26.23).toFixed(2),
-            hasteRating: (totalStats.hasteRating / 32.79).toFixed(2),
+            hitRating: (totalStats.hitRating / STAT_TYPES[31].ratingPerPercent).toFixed(2),
+            hasteRating: (totalStats.hasteRating / STAT_TYPES[36].ratingPerPercent).toFixed(2),
             spellPenetration: totalStats.spellPenetration,
-            resilience: (totalStats.resilience / 81.97497559).toFixed(2),
-            armorPenRating: (totalStats.armorPenRating / 13.99).toFixed(2)
+            resilience: (totalStats.resilience / STAT_TYPES[35].ratingPerPercent).toFixed(2),
+            spellCrit: (totalStats.spellCrit / STAT_TYPES[32].ratingPerPercent).toFixed(2)
         };
 
+        // Define stats for each column
         const displayStats = {
-            // First column stats
             col1: {
                 hitRating: { name: 'Меткость', format: (v, p) => `${v} (${p}%)` },
-                hasteRating: { name: 'Скорость', format: (v, p) => `${v} (${p}%)` },
-                spellPenetration: { name: 'Пробивание закл.', format: (v) => `${v} (-${v})` }
+                hasteRating: { name: 'Скорость', format: (v, p) => `${v} (${p}%)` }
             },
-            // Second column stats
             col2: {
+                spellPenetration: { name: 'Проникающая способность закл.', format: (v) => `${v} (-${v})` },
+                spellCrit: { name: 'Крит. удар закл.', format: (v, p) => `${v} (${p}%)` }
+            },
+            col3: {
                 resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
-                armorPenRating: { name: 'Пробивание брони', format: (v, p) => `${v} (${p}%)` }
+                manaRegen: { name: 'Восп. маны', format: (v) => `${v}` }
             }
         };
 
-        // Get columns
-        const [col1, col2] = statsCard.querySelectorAll('.box-col');
+        const [col1, col2, col3] = statsCard.querySelectorAll('.box-col');
         col1.innerHTML = '';
         col2.innerHTML = '';
+        col3.innerHTML = '';
 
-        // Fill first column
+        // Fill columns
         Object.entries(displayStats.col1).forEach(([key, info]) => {
             const value = totalStats[key] || 0;
             const formattedValue = info.format(value, percentages[key]);
             const newRow = document.createElement('div');
+            newRow.setAttribute('data-v-43386d94', '');
             newRow.className = 'box-row';
             newRow.innerHTML = `
-            <div class="box-item">
-                <p class="item-name">${info.name}:</p>
-                <p class="item-stats">${formattedValue}</p>
+            <div data-v-43386d94="" class="box-item">
+                <p data-v-43386d94="" class="item-name">${info.name}:</p>
+                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
             </div>
         `;
             col1.appendChild(newRow);
         });
 
-        // Fill second column
         Object.entries(displayStats.col2).forEach(([key, info]) => {
             const value = totalStats[key] || 0;
             const formattedValue = info.format(value, percentages[key]);
             const newRow = document.createElement('div');
+            newRow.setAttribute('data-v-43386d94', '');
             newRow.className = 'box-row';
             newRow.innerHTML = `
-            <div class="box-item">
-                <p class="item-name">${info.name}:</p>
-                <p class="item-stats">${formattedValue}</p>
+            <div data-v-43386d94="" class="box-item">
+                <p data-v-43386d94="" class="item-name">${info.name}:</p>
+                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
             </div>
         `;
             col2.appendChild(newRow);
+        });
+
+        Object.entries(displayStats.col3).forEach(([key, info]) => {
+            const value = totalStats[key] || 0;
+            const formattedValue = info.format(value, percentages[key]);
+            const newRow = document.createElement('div');
+            newRow.setAttribute('data-v-43386d94', '');
+            newRow.className = 'box-row';
+            newRow.innerHTML = `
+            <div data-v-43386d94="" class="box-item">
+                <p data-v-43386d94="" class="item-name">${info.name}:</p>
+                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
+            </div>
+        `;
+            col3.appendChild(newRow);
         });
     }
 
     async function init() {
         try {
-            const equipment = await getCharacterEquipment();
 
+            const equipment = await getCharacterEquipment();
             const totalStats = {
                 hitRating: 0,
                 hasteRating: 0,
                 spellPenetration: 0,
                 resilience: 0,
-                armorPenRating: 0
+                armorPenRating: 0,
+                spellCrit: 0,
+                manaRegen: 0
             };
+
+            let setBonusProcessed = false;
+            let setBonusStats = null;
 
             for (const item of equipment) {
                 if (item.entry && item.guid) {
                     try {
                         const itemData = await fetchItemData(item.entry, item.guid);
                         const itemStats = calculateItemStats(itemData);
+
+                        if (!setBonusProcessed && itemData.item?.itemset_data?.setBonuses) {
+                            setBonusStats = calculateSetBonuses(itemData);
+                            setBonusProcessed = true;
+                        }
 
                         Object.keys(totalStats).forEach(key => {
                             totalStats[key] += itemStats[key];
@@ -377,10 +475,16 @@
                 }
             }
 
-            updateStatsDisplay(totalStats);
+            if (setBonusStats) {
+                Object.keys(totalStats).forEach(key => {
+                    totalStats[key] += setBonusStats[key];
+                });
+            }
 
+            updateStatsDisplay(totalStats);
         } catch (error) {
             console.error('Error in init:', error);
+        } finally {
         }
     }
 
@@ -390,4 +494,5 @@
     } else {
         init();
     }
+
 })();
