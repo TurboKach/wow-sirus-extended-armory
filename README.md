@@ -23,7 +23,7 @@ A Tampermonkey userscript that enhances the Sirus WoW Armory character pages by 
 All percentages are calculated using WotLK level 80 conversion rates:
 - Hit Rating: 26.23 rating = 1%
 - Haste Rating: 32.79 rating = 1%
-- Resilience: 81.97497559 rating = 1%
+- Resilience: 94.27 rating = 1%
 - Armor Penetration: 13.99 rating = 1%
 ## Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
