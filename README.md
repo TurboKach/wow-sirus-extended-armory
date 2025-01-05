@@ -12,6 +12,7 @@ A Tampermonkey userscript that enhances the Sirus WoW Armory character pages by 
   - Spell Penetration
   - Resilience Rating (with percentage)
   - Armor Penetration Rating (with percentage)
+  - Crit Rating (with percentage)
 - Calculates stats from all sources: base stats, enchants, gems, and set bonuses
 - Uses the same visual style as the original armory
 - Shows all stats even when they're 0
@@ -25,6 +26,7 @@ All percentages are calculated using WotLK level 80 conversion rates:
 - Haste Rating: 32.79 rating = 1%
 - Resilience: 94.27 rating = 1%
 - Armor Penetration: 13.99 rating = 1%
+- Crit Rating: 26.63 rating = 1%
 ## Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 ## License
