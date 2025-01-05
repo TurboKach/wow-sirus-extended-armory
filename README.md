@@ -23,7 +23,7 @@
 ## Установка
 1. Установите [Tampermonkey](https://www.tampermonkey.net/) для вашего браузера
 2. Нажмите [здесь](https://github.com/TurboKach/wow-sirus-extended-armory/raw/refs/heads/master/sirus-wow-extended-stats.user.js), чтобы установить скрипт
-3. Посетите любую страницу персонажа в Sirus WoW Armory, чтобы увидеть расширенную статистику
+3. Посетите [любую страницу персонажа](https://sirus.su/base/character/x1/%C3%AF%C3%A8%C3%A4%C3%AE%C3%B0%C3%B8%C3%A0/) в Sirus WoW Armory, чтобы увидеть расширенную статистику
 
 ## Конверсия Рейтингов в Проценты
 Все проценты рассчитываются на основе коэффициентов для WotLK уровня 80:
