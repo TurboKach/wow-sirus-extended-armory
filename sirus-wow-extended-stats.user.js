@@ -39,6 +39,7 @@
  */
 
 
+
 (function() {
     'use strict';
 
@@ -52,18 +53,21 @@
         35: { name: 'resilience', displayName: 'Устойчивость', ratingPerPercent: 94.27 },
         44: { name: 'armorPenRating', displayName: 'Пробивание брони', ratingPerPercent: 13.99 },
         32: { name: 'spellCrit', displayName: 'Крит. удар закл.', ratingPerPercent: 26.63 },
-        43: { name: 'manaRegen', displayName: 'Восп. маны' }
     };
 
     // Stat text mappings for gem and enchant descriptions
     const STAT_TEXT_MAPPINGS = {
         'к рейтингу меткости': 'hitRating',
+        'к меткости': 'hitRating',
         'к рейтингу скорости': 'hasteRating',
+        'к скорости': 'hasteRating',
         'к проникающей способности заклинаний': 'spellPenetration',
         'к рейтингу устойчивости': 'resilience',
+        'к устойчивости': 'resilience',
         'к пробиванию брони': 'armorPenRating',
+        'к рейтингу пробивания брони': 'armorPenRating',
         'к критическому удару заклинаний': 'spellCrit',
-        'к восполнению маны': 'manaRegen'
+
     };
 
     // Wait for element to appear
@@ -182,7 +186,6 @@
             resilience: 0,
             armorPenRating: 0,
             spellCrit: 0,
-            manaRegen: 0
         };
 
         if (!itemData?.item) return stats;
@@ -198,7 +201,7 @@
             if (statType && STAT_TYPES[statType]) {
                 const statName = STAT_TYPES[statType].name;
                 stats[statName] += statValue;
-                console.log(`Added ${statValue} to ${statName} from base stats`);
+                console.log(`Added ${statValue} ${statName} from base stats`);
             }
         }
 
@@ -286,7 +289,6 @@
             resilience: 0,
             armorPenRating: 0,
             spellCrit: 0,
-            manaRegen: 0
         };
 
         if (itemData?.item?.itemset_data?.setBonuses) {
@@ -382,7 +384,6 @@
             },
             col3: {
                 resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
-                manaRegen: { name: 'Восп. маны', format: (v) => `${v}` }
             }
         };
 
@@ -449,7 +450,6 @@
                 resilience: 0,
                 armorPenRating: 0,
                 spellCrit: 0,
-                manaRegen: 0
             };
 
             let setBonusProcessed = false;
