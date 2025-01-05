@@ -40,6 +40,7 @@
 
 
 
+
 (function() {
     'use strict';
 
@@ -317,50 +318,197 @@
         return stats;
     }
 
-    function updateStatsDisplay(totalStats) {
+
+    function createStatsCardFrame() {
+        console.log('Creating stats card frame...');
+
         const mainContent = document.querySelector('.card.talents.mt-3')?.parentElement;
-        if (!mainContent) return;
+        if (!mainContent) {
+            console.warn('Parent element not found. Waiting for it to be ready...');
+            return tryCreateFrameWhenReady();
+        }
 
-        let statsCard = document.querySelector('.card.extra-stats');
+        console.log('Parent element found, creating card...');
+
+        // Remove existing stats card if present
+        const existingCard = document.querySelector('.card.extra-stats');
+        if (existingCard) {
+            console.log('Removing existing card...');
+            existingCard.remove();
+        }
+
+        // Create the main card container
+        const statsCard = document.createElement('div');
+        statsCard.setAttribute('data-v-43386d94', '');
+        statsCard.setAttribute('data-v-46f0c0ee', '');
+        statsCard.className = 'card talents mt-3 extra-stats';
+        statsCard.style.display = 'block';
+
+        // Create and append the header
+        const header = document.createElement('div');
+        header.setAttribute('data-v-43386d94', '');
+        header.className = 'card-header';
+        header.innerHTML = '<h5 data-v-43386d94="">Дополнительные характеристики<br>(бонусы от созвездий и расы не учитываются)</h5>';
+        statsCard.appendChild(header);
+
+        // Create the body
+        const body = document.createElement('div');
+        body.setAttribute('data-v-43386d94', '');
+        body.className = 'card-body card-datatable';
+
+        // Create the loader container
+        const loaderContainer = document.createElement('div');
+        loaderContainer.className = 'loader-container';
+        loaderContainer.style.cssText = `
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 150px;
+        width: 100%;
+    `;
+
+        // Create the loader element
+        const loader = document.createElement('div');
+        loader.className = 'stats-loader';
+        loader.style.cssText = `
+        width: 48px;
+        height: 48px;
+        border: 5px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 5px solid #3498db;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+    `;
+
+        // Add the animation keyframes if they don't exist
+        if (!document.querySelector('#stats-loader-style')) {
+            const styleSheet = document.createElement('style');
+            styleSheet.id = 'stats-loader-style';
+            styleSheet.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+            document.head.appendChild(styleSheet);
+        }
+
+        // Assemble the card
+        loaderContainer.appendChild(loader);
+        body.appendChild(loaderContainer);
+        statsCard.appendChild(body);
+
+        console.log('Appending card to parent...');
+        mainContent.appendChild(statsCard);
+
+        return statsCard;
+    }
+
+
+
+    function tryCreateFrameWhenReady() {
+        console.log('Setting up mutation observer to wait for parent element...');
+
+        return new Promise((resolve) => {
+            // First, try immediate check
+            const mainContent = document.querySelector('.card.talents.mt-3')?.parentElement;
+            if (mainContent) {
+                console.log('Parent element found immediately');
+                resolve(createStatsCardFrame());
+                return;
+            }
+
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = 500; // 500ms between attempts
+
+            const checkElement = () => {
+                attempts++;
+                const mainContent = document.querySelector('.card.talents.mt-3')?.parentElement;
+
+                if (mainContent) {
+                    console.log('Parent element found on attempt', attempts);
+                    observer.disconnect();
+                    clearInterval(intervalId);
+                    resolve(createStatsCardFrame());
+                    return true;
+                }
+
+                if (attempts >= maxAttempts) {
+                    console.log('Max attempts reached, creating card anyway...');
+                    observer.disconnect();
+                    clearInterval(intervalId);
+                    // Try to create card even if parent not found
+                    resolve(createStatsCardFrame());
+                    return true;
+                }
+
+                return false;
+            };
+
+            const observer = new MutationObserver((mutations, obs) => {
+                if (checkElement()) {
+                    obs.disconnect();
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true
+            });
+
+            // Also check periodically in case mutations don't trigger
+            const intervalId = setInterval(() => {
+                checkElement();
+            }, interval);
+        });
+    }
+
+
+    function updateStatsDisplay(totalStats, statsCard) {
         if (!statsCard) {
-            statsCard = document.createElement('div');
-            statsCard.setAttribute('data-v-43386d94', '');
-            statsCard.setAttribute('data-v-46f0c0ee', '');
-            statsCard.className = 'card talents mt-3';
+            console.error('Stats card not provided to updateStatsDisplay');
+            return;
+        }
 
-            const header = document.createElement('div');
-            header.setAttribute('data-v-43386d94', '');
-            header.className = 'card-header';
-            header.innerHTML = '<h5 data-v-43386d94="">Дополнительные характеристики<br>(бонусы от созвездий и расы не учитываются)</h5>';
-            statsCard.appendChild(header);
+        console.log('Updating stats display...');
 
-            const body = document.createElement('div');
+        // Remove loader if it exists
+        const loader = statsCard.querySelector('.loader-container');
+        if (loader) {
+            loader.remove();
+        }
+
+        // Get or create the card body
+        let body = statsCard.querySelector('.card-body');
+        if (!body) {
+            body = document.createElement('div');
             body.setAttribute('data-v-43386d94', '');
             body.className = 'card-body card-datatable';
+            statsCard.appendChild(body);
+        }
 
-            const row = document.createElement('div');
+        // Create row for columns if it doesn't exist
+        let row = body.querySelector('.row');
+        if (!row) {
+            row = document.createElement('div');
             row.setAttribute('data-v-43386d94', '');
             row.className = 'row';
-
-            // Create three columns to match original layout
-            const col1 = document.createElement('div');
-            col1.setAttribute('data-v-43386d94', '');
-            col1.className = 'box-col col-12 col-lg-4 col-md-6';
-
-            const col2 = document.createElement('div');
-            col2.setAttribute('data-v-43386d94', '');
-            col2.className = 'box-col col-12 col-lg-4 col-md-6';
-
-            const col3 = document.createElement('div');
-            col3.setAttribute('data-v-43386d94', '');
-            col3.className = 'box-col col-12 col-lg-4 col-md-6';
-
-            row.appendChild(col1);
-            row.appendChild(col2);
-            row.appendChild(col3);
             body.appendChild(row);
-            statsCard.appendChild(body);
-            mainContent.appendChild(statsCard);
+        }
+
+        // Create columns if they don't exist
+        const columns = [];
+        for (let i = 0; i < 3; i++) {
+            let col = row.children[i];
+            if (!col) {
+                col = document.createElement('div');
+                col.setAttribute('data-v-43386d94', '');
+                col.className = 'box-col col-12 col-lg-4 col-md-6';
+                row.appendChild(col);
+            }
+            columns.push(col);
         }
 
         // Calculate percentages
@@ -379,68 +527,63 @@
                 hasteRating: { name: 'Скорость', format: (v, p) => `${v} (${p}%)` }
             },
             col2: {
-                spellPenetration: { name: 'Проникающая способность закл.', format: (v) => `${v} (-${v})` },
+                spellPenetration: { name: 'Проник. сп. закл.', format: (v) => `${v} (-${v})` },
                 spellCrit: { name: 'Крит. удар', format: (v, p) => `${v} (${p}%)` }
             },
             col3: {
-                resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
+                resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` }
             }
         };
 
-        const [col1, col2, col3] = statsCard.querySelectorAll('.box-col');
-        col1.innerHTML = '';
-        col2.innerHTML = '';
-        col3.innerHTML = '';
+        // Clear existing content
+        columns.forEach(col => col.innerHTML = '');
 
         // Fill columns
         Object.entries(displayStats.col1).forEach(([key, info]) => {
             const value = totalStats[key] || 0;
             const formattedValue = info.format(value, percentages[key]);
-            const newRow = document.createElement('div');
-            newRow.setAttribute('data-v-43386d94', '');
-            newRow.className = 'box-row';
-            newRow.innerHTML = `
-            <div data-v-43386d94="" class="box-item">
-                <p data-v-43386d94="" class="item-name">${info.name}:</p>
-                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
-            </div>
-        `;
-            col1.appendChild(newRow);
+            createStatRow(columns[0], info.name, formattedValue);
         });
 
         Object.entries(displayStats.col2).forEach(([key, info]) => {
             const value = totalStats[key] || 0;
             const formattedValue = info.format(value, percentages[key]);
-            const newRow = document.createElement('div');
-            newRow.setAttribute('data-v-43386d94', '');
-            newRow.className = 'box-row';
-            newRow.innerHTML = `
-            <div data-v-43386d94="" class="box-item">
-                <p data-v-43386d94="" class="item-name">${info.name}:</p>
-                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
-            </div>
-        `;
-            col2.appendChild(newRow);
+            createStatRow(columns[1], info.name, formattedValue);
         });
 
         Object.entries(displayStats.col3).forEach(([key, info]) => {
             const value = totalStats[key] || 0;
             const formattedValue = info.format(value, percentages[key]);
-            const newRow = document.createElement('div');
-            newRow.setAttribute('data-v-43386d94', '');
-            newRow.className = 'box-row';
-            newRow.innerHTML = `
-            <div data-v-43386d94="" class="box-item">
-                <p data-v-43386d94="" class="item-name">${info.name}:</p>
-                <p data-v-43386d94="" class="item-stats">${formattedValue}</p>
-            </div>
-        `;
-            col3.appendChild(newRow);
+            createStatRow(columns[2], info.name, formattedValue);
         });
+
+        console.log('Stats display updated successfully');
     }
 
+
+    function createStatRow(column, name, value) {
+        const newRow = document.createElement('div');
+        newRow.setAttribute('data-v-43386d94', '');
+        newRow.className = 'box-row';
+        newRow.innerHTML = `
+        <div data-v-43386d94="" class="box-item">
+            <p data-v-43386d94="" class="item-name">${name}:</p>
+            <p data-v-43386d94="" class="item-stats">${value}</p>
+        </div>
+    `;
+        column.appendChild(newRow);
+    }
+
+
     async function init() {
+        console.log('Initializing...');
         try {
+            // Create the frame and wait for it to be ready
+            const statsCard = await createStatsCardFrame();
+            if (!statsCard) {
+                console.error('Failed to create stats card frame');
+                return;
+            }
 
             const equipment = await getCharacterEquipment();
             const totalStats = {
@@ -481,7 +624,7 @@
                 });
             }
 
-            updateStatsDisplay(totalStats);
+            updateStatsDisplay(totalStats, statsCard);
         } catch (error) {
             console.error('Error in init:', error);
         } finally {
