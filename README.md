@@ -1,33 +1,40 @@
-# Sirus WoW Armory Extended Stats
-A Tampermonkey userscript that enhances the Sirus WoW Armory character pages by adding additional stats display.
+
+
+# Sirus WoW Armory Расширенная Статистика
+
+Пользовательский скрипт для Tampermonkey, который улучшает страницы персонажей в Sirus WoW Armory, добавляя отображение дополнительной статистики.
 
 <p align="center">
   <img src="https://github.com/TurboKach/wow-sirus-extended-armory/raw/master/screenshots/preview.jpg" width="400">
 </p>
 
-## Features
-- Displays additional character statistics not shown in the default UI:
-  - Hit Rating (with percentage)
-  - Haste Rating (with percentage)
-  - Spell Penetration
-  - Resilience Rating (with percentage)
-  - Armor Penetration Rating (with percentage)
-  - Crit Rating (with percentage)
-- Calculates stats from all sources: base stats, enchants, gems, and set bonuses
-- Uses the same visual style as the original armory
-- Shows all stats even when they're 0
-## Installation
-1. Install [Tampermonkey](https://www.tampermonkey.net/) for your browser
-2. Click [here](https://github.com/TurboKach/wow-sirus-extended-armory/raw/refs/heads/master/sirus-wow-extended-stats.user.js) to install the script
-3. Visit any Sirus WoW Armory character page to see the enhanced stats
-## Stat Conversion Rates
-All percentages are calculated using WotLK level 80 conversion rates:
-- Hit Rating: 26.23 rating = 1%
-- Haste Rating: 32.79 rating = 1%
-- Resilience: 94.27 rating = 1%
-- Armor Penetration: 13.99 rating = 1%
-- Crit Rating: 26.63 rating = 1%
-## Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-## License
+## Возможности
+- Отображает дополнительную статистику персонажа, которая не показывается в стандартном интерфейсе:
+  - Рейтинг меткости (с процентом)
+  - Рейтинг скорости (с процентом)
+  - Проникающая способность заклинаний
+  - Рейтинг устойчивости (с процентом)
+  - Рейтинг пробивания брони (с процентом)
+  - Рейтинг критического удара (с процентом)
+- Учитывает статистику из всех источников: базовые характеристики, зачарования, камни и бонусы от комплектов
+- Использует тот же визуальный стиль, что и оригинальный Armory
+- Показывает все характеристики, даже если они равны 0
+
+## Установка
+1. Установите [Tampermonkey](https://www.tampermonkey.net/) для вашего браузера
+2. Нажмите [здесь](https://github.com/TurboKach/wow-sirus-extended-armory/raw/refs/heads/master/sirus-wow-extended-stats.user.js), чтобы установить скрипт
+3. Посетите любую страницу персонажа в Sirus WoW Armory, чтобы увидеть расширенную статистику
+
+## Конверсия Рейтингов в Проценты
+Все проценты рассчитываются на основе коэффициентов для WotLK уровня 80:
+- Рейтинг меткости: 26.23 рейтинга = 1%
+- Рейтинг скорости: 32.79 рейтинга = 1%
+- Устойчивость: 94.27 рейтинга = 1%
+- Пробивание брони: 13.99 рейтинга = 1%
+- Рейтинг критического удара: 26.63 рейтинга = 1%
+
+## Вклад в Разработку
+Pull-запросы приветствуются! Для крупных изменений, пожалуйста, сначала создайте задачу, чтобы обсудить, что именно вы хотите изменить.
+
+## Лицензия
 [MIT](LICENSE)
