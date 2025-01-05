@@ -52,7 +52,7 @@
         37: { name: 'spellPenetration', displayName: 'Проникающая способность закл.' },
         35: { name: 'resilience', displayName: 'Устойчивость', ratingPerPercent: 94.27 },
         44: { name: 'armorPenRating', displayName: 'Пробивание брони', ratingPerPercent: 13.99 },
-        32: { name: 'spellCrit', displayName: 'Крит. удар закл.', ratingPerPercent: 26.63 },
+        32: { name: 'spellCrit', displayName: 'Крит. удар', ratingPerPercent: 26.63 },
     };
 
     // Stat text mappings for gem and enchant descriptions
@@ -380,7 +380,7 @@
             },
             col2: {
                 spellPenetration: { name: 'Проникающая способность закл.', format: (v) => `${v} (-${v})` },
-                spellCrit: { name: 'Крит. удар закл.', format: (v, p) => `${v} (${p}%)` }
+                spellCrit: { name: 'Крит. удар', format: (v, p) => `${v} (${p}%)` }
             },
             col3: {
                 resilience: { name: 'Устойчивость', format: (v, p) => `${v} (${p}%)` },
